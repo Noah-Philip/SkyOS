@@ -100,3 +100,36 @@ func TestApplyHeartbeatIgnoresOlderSequence(t *testing.T) {
 		)
 	}
 }
+
+func TestCheckHealthUpdatesPeerStatus(t *testing.T) {
+	registry := NewPeerRegistry()
+	now := time.Date(2026, 9, 27, 0, 0, 0, 0, time.UTC)
+
+	registry.ApplyHeartbeat(Heartbeat{
+		NodeID:   "drone-2",
+		Sequence: 1,
+		Battery:  80,
+	}, now)
+
+	registry.CheckHealth(now.Add(4 * time.Second))
+
+	peer, _ := registry.GetPeer("drone-2")
+	if peer.Status != PeerSuspect {
+		t.Fatalf(
+			"expected status %q, got %q",
+			PeerSuspect,
+			peer.Status,
+		)
+	}
+
+	registry.CheckHealth(now.Add(7 * time.Second))
+
+	peer, _ = registry.GetPeer("drone-2")
+	if peer.Status != PeerDead {
+		t.Fatalf(
+			"expected status %q, got %q",
+			PeerDead,
+			peer.Status,
+		)
+	}
+}

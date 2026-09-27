@@ -8,9 +8,14 @@ import (
 type PeerStatus string
 
 const (
-	PeerReady PeerStatus = "READY"
+	PeerReady   PeerStatus = "READY"
 	PeerSuspect PeerStatus = "SUSPECT"
-	PeerDead  PeerStatus = "DEAD"
+	PeerDead    PeerStatus = "DEAD"
+)
+
+const (
+	PeerSuspectAfter = 3 * time.Second
+	PeerDeadAfter    = 6 * time.Second
 )
 
 // Information a drone receives from another drone
@@ -70,6 +75,26 @@ func (r *PeerRegistry) ApplyHeartbeat(
 	peer.Position = heartbeat.Position
 	peer.Battery = heartbeat.Battery
 	peer.Status = PeerReady
+}
+
+//Checks last heartbeat and determines if that drone is dead, suspected of being dead, or healthy.
+func (r *PeerRegistry) CheckHealth(now time.Time) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, peer := range r.peers {
+		timeSinceHeartbeat := now.Sub(peer.LastHeartbeatAt)
+
+		switch {
+		case timeSinceHeartbeat >= PeerDeadAfter:
+			peer.Status = PeerDead
+		case timeSinceHeartbeat >= PeerSuspectAfter:
+			peer.Status = PeerSuspect
+
+		default:
+			peer.Status = PeerReady
+		}
+	}
 }
 
 func (r *PeerRegistry) GetPeer(id string) (Peer, bool) {
