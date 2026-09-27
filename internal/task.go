@@ -1,9 +1,8 @@
 package internal
 
 type Task struct {
-
 	ID string
-	
+
 	//Position
 	Position Position
 
