@@ -38,6 +38,10 @@ func main() {
 		"/v1/heartbeat",
 		registry.HandleHeartbeat,
 	)
+	mux.HandleFunc(
+		"/v1/status",
+		registry.HandleStatus,
+	)
 
 	address := ":" + *port
 
