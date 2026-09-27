@@ -77,7 +77,7 @@ func (r *PeerRegistry) ApplyHeartbeat(
 	peer.Status = PeerReady
 }
 
-//Checks last heartbeat and determines if that drone is dead, suspected of being dead, or healthy.
+// Checks last heartbeat and determines if that drone is dead, suspected of being dead, or healthy.
 func (r *PeerRegistry) CheckHealth(now time.Time) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
