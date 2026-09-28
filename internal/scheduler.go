@@ -1,8 +1,9 @@
 package internal
+
 import "sync"
 
 type Scheduler struct {
-	Workload []*Task 
+	Workload []*Task
 	mu       sync.Mutex
 }
 
@@ -30,7 +31,7 @@ func (s *Scheduler) RemoveTask(taskToRemove *Task) {
 			s.Workload = append(
 				s.Workload[:i], s.Workload[i+1:]...,
 			)
-			return;
+			return
 		}
 	}
 }

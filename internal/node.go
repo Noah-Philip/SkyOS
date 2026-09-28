@@ -1,8 +1,8 @@
 package internal
 
 import "math"
-type NodeStatus string
 
+type NodeStatus string
 
 type Position struct {
 	X float64
@@ -12,20 +12,19 @@ type Position struct {
 
 const (
 	NodeReady NodeStatus = "READY"
-	NodeBusy NodeStatus = "BUSY"
-	NodeDead NodeStatus = "DEAD"
+	NodeBusy  NodeStatus = "BUSY"
+	NodeDead  NodeStatus = "DEAD"
 )
 
 type Resources struct {
 	Battery float64
 	// CPU_Usage float64
-	// Memory_Usage float64 
+	// Memory_Usage float64
 }
 
 type Node struct {
-
 	ID string
-	
+
 	//Position
 	Position Position
 
@@ -33,21 +32,21 @@ type Node struct {
 	Resources Resources
 
 	Status NodeStatus
-	
+
 	Tasks []*Task
 }
 
 func (n *Node) isEligibleForTask(task *Task) bool {
-	if(n.Status != NodeReady || n.Resources.Battery < task.MinRequirements.Battery) {
-		return false;
+	if n.Status != NodeReady || n.Resources.Battery < task.MinRequirements.Battery {
+		return false
 	}
 
-	return true;
+	return true
 }
 
 func (n *Node) calculateScore(task *Task) float64 {
-	score := -1 * Distance3D(n.Position, task.Position) / (n.Resources.Battery - task.MinRequirements.Battery) - float64(len(n.Tasks)) * 10
-	return score;
+	score := -1*Distance3D(n.Position, task.Position)/(n.Resources.Battery-task.MinRequirements.Battery) - float64(len(n.Tasks))*10
+	return score
 }
 
 // Distance3D calculates the distance between two 3D points
