@@ -1,7 +1,9 @@
 package internal
 
+import "sync"
+
 type Scheduler struct {
-	Workload []*Task 
+	Workload []*Task
 	mu       sync.Mutex
 }
 
@@ -21,15 +23,17 @@ func (s *Scheduler) AddTask(task *Task) {
 	s.Workload = append(s.Workload, task)
 }
 
-func (s *Scheduler) RemoveTask(task *Task) {
+func (s *Scheduler) RemoveTask(taskToRemove *Task) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for i, task := range s.Workload {
 		if task == taskToRemove {
-			append(s.Workload[:i], s.Workload[i+1:]...)
+			s.Workload = append(
+				s.Workload[:i], s.Workload[i+1:]...,
+			)
+			return
 		}
 	}
-	s.Workload = s.Workload[:len(s.Workload)-1]
 }
 
 func (s *Scheduler) GetWorkload() []*Task {
@@ -62,7 +66,7 @@ func (s *Scheduler) Size() int {
 	return len(s.Workload)
 }
 
-func () scoreNodes(Task *Task, nodes []*Node) map[*Node]float64 {
+func (s *Scheduler) scoreNodes(Task *Task, nodes []*Node) map[*Node]float64 {
 	scores := make(map[*Node]float64)
 	for _, node := range nodes {
 		scores[node] = 0
