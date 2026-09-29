@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/noah-philip/skyos/internal"
@@ -27,11 +28,8 @@ func main() {
 	)
 
 	//Command line option for peerURL
-	peerURL := flag.String(
-		"peer",
-		"", //Default value if you dont provide it
-		"base URL of the peer drone",
-	)
+	var peers peerURLs
+	flag.Var(&peers, "peer", "peer based url; may be provided multiple times")
 	battery := flag.Float64(
 		"battery",
 		100,
@@ -69,8 +67,8 @@ func main() {
 		registry.HandleStatus,
 	)
 
-	if *peerURL != "" {
-		go sendHeartbeat(client, *peerURL, node)
+	if len(peers) > 0 {
+		go sendHeartbeat(client, peers, node)
 	}
 
 	address := ":" + *port
@@ -90,7 +88,7 @@ func main() {
 
 func sendHeartbeat(
 	client *internal.HeartbeatClient,
-	peerURL string,
+	peers peerURLs,
 	node internal.Node,
 ) {
 	//ticker produces an event every second
@@ -109,22 +107,23 @@ func sendHeartbeat(
 			Position: node.Position,
 			Battery:  node.Resources.Battery,
 		}
-		//Sends heartbeat to other drone
-		if err := client.Send(peerURL, heartbeat); err != nil {
+		for _, peerURL := range peers {
+			//Sends heartbeat to other drone
+			if err := client.Send(peerURL, heartbeat); err != nil {
+				log.Printf(
+					"failed to send heartbeat to %s: %v",
+					peerURL,
+					err,
+				)
+				continue
+			}
 			log.Printf(
-				"failed to send heartbeat to %s: %v",
+				"sent heartbeat %d to %s",
+				sequence,
 				peerURL,
-				err,
 			)
 		}
-		continue
 	}
-
-	log.Printf(
-		"sent heartbeat %d to %s",
-		sequence,
-		peerURL,
-	)
 }
 
 func checkPeerHealth(registry *internal.PeerRegistry) {
@@ -136,4 +135,14 @@ func checkPeerHealth(registry *internal.PeerRegistry) {
 		registry.CheckHealth(time.Now())
 	}
 
+}
+
+type peerURLs []string
+
+func (p *peerURLs) String() string {
+	return strings.Join(*p, ",")
+}
+func (p *peerURLs) Set(value string) error {
+	*p = append(*p, value)
+	return nil
 }
