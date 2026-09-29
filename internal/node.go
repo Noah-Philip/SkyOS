@@ -55,6 +55,5 @@ func (n *Node) calculateScore(task *Task) float64 {
 
 // Distance3D calculates the distance between two 3D points
 func Distance3D(p1, p2 Position) float64 {
-func Distance3D(p1, p2 Position) float64 {
 	return math.Sqrt(math.Pow(p2.X-p1.X, 2) + math.Pow(p2.Y-p1.Y, 2) + math.Pow(p2.Z-p1.Z, 2))
 }
