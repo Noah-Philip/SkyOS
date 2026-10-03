@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -20,29 +21,33 @@ func main() {
 		"unique ID for this drone",
 	)
 
-	//Port
-	port := flag.String(
-		"port",
-		"8081",
-		"HTTP port for this drone",
+	configPath := flag.String(
+		"config",
+		"",
+		"path to the swarm config file",
 	)
 
-	//Command line option for peerURL
-	var peers peerURLs
-	flag.Var(&peers, "peer", "peer based url; may be provided multiple times")
-	battery := flag.Float64(
-		"battery",
-		100,
-		"simulated battery percentage",
-	)
-
-	//Reads in arguments passed in command line & fills in NodeID and port
+	//Reads in arguments passed in command line & fills in NodeID
 	flag.Parse()
 
+	if *configPath == "" {
+		log.Fatal("--config is required")
+	}
+
+	config, err := internal.LoadSwarmConfig(*configPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nodeConfig, found := config.NodeByID(*NodeID)
+	if !found {
+		log.Fatalf("node %q was not found in config", *NodeID)
+	}
+
 	node := internal.Node{
-		ID: *NodeID,
+		ID: nodeConfig.ID,
 		Resources: internal.Resources{
-			Battery: *battery,
+			Battery: nodeConfig.Battery,
 		},
 	}
 
@@ -67,11 +72,11 @@ func main() {
 		registry.HandleStatus,
 	)
 
-	if len(peers) > 0 {
-		go sendHeartbeat(client, peers, node)
+	if len(nodeConfig.Peers) > 0 {
+		go sendHeartbeat(client, nodeConfig.Peers, node)
 	}
 
-	address := ":" + *port
+	address := fmt.Sprintf(":%d", nodeConfig.Port)
 
 	//Prints message
 	log.Printf(
@@ -88,7 +93,7 @@ func main() {
 
 func sendHeartbeat(
 	client *internal.HeartbeatClient,
-	peers peerURLs,
+	peers []string,
 	node internal.Node,
 ) {
 	//ticker produces an event every second

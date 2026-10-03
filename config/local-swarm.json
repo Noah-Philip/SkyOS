@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "drone-1",
+      "port": 8081,
+      "battery": 80,
+      "peers": [
+        "http://localhost:8082",
+        "http://localhost:8083"
+      ]
+    },
+    {
+      "id": "drone-2",
+      "port": 8082,
+      "battery": 65,
+      "peers": [
+        "http://localhost:8081",
+        "http://localhost:8083"
+      ]
+    },
+    {
+      "id": "drone-3",
+      "port": 8083,
+      "battery": 90,
+      "peers": [
+        "http://localhost:8081",
+        "http://localhost:8082"
+      ]
+    }
+  ]
+}
