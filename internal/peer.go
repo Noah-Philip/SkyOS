@@ -113,14 +113,14 @@ func (r *PeerRegistry) GetPeer(id string) (Peer, bool) {
 }
 
 // Returns copies of each peer currently known by drone
-func (r *PeerRegistry) ListPeers() []Peer {
+func (r *PeerRegistry) ListPeers() []*Peer {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	peers := make([]Peer, 0, len(r.peers))
+	peers := make([]*Peer, 0, len(r.peers))
 
 	for _, peer := range r.peers {
-		peers = append(peers, *peer)
+		peers = append(peers, peer)
 	}
 
 	return peers

@@ -65,7 +65,7 @@ func (r *PeerRegistry) HandleStatus(
 	//Temporary response variable that holds the drone's peer list
 	//Creates JSON text in the HTTP response & sends it to whoever made the request
 	response := struct {
-		Peers []Peer `json:"peers"`
+		Peers []*Peer `json:"peers"`
 	}{
 		Peers: r.ListPeers(),
 	}

@@ -49,6 +49,7 @@ func main() {
 		Resources: internal.Resources{
 			Battery: nodeConfig.Battery,
 		},
+		Status: internal.NodeReady,
 	}
 
 	//Creates Drone 1's local peer registry
@@ -69,7 +70,7 @@ func main() {
 	)
 	mux.HandleFunc(
 		"/v1/status",
-		registry.HandleStatus,
+		internal.NodeStatusHandler(&node, registry),
 	)
 
 	if len(nodeConfig.Peers) > 0 {
